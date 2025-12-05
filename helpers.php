@@ -161,7 +161,16 @@ function formatPrice(int|float $price): string
 function getDtRange(string $endDate): array
 {
     $now = new DateTime();
-    $end = new DateTime($endDate);
+    try {
+        $end = new DateTime($endDate);
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+        return [
+            'hours' => 0,
+            'minutes' => 0
+        ];
+    }
+
 
     $diff = $now->diff($end);
     $hours = 0;
