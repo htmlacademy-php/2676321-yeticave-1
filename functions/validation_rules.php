@@ -22,7 +22,6 @@ function validateImage(string $fieldName): ?string
 
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $fileType = finfo_file($finfo, $fileName);
-    finfo_close($finfo);
 
     if ($fileType !== 'image/jpeg' && $fileType !== 'image/png') {
         return 'Допустимые форматы файлов: jpg, jpeg, png';
@@ -85,11 +84,7 @@ function minLength(int $min): callable
 function positiveInt(int $maxValue = 1_000_000_000): callable
 {
     return function ($value) use ($maxValue): bool {
-        if (filter_var($value, FILTER_VALIDATE_INT) === false || $value <= 0) {
-            return false;
-        }
-
-        return $value <= $maxValue;
+        return filter_var($value, FILTER_VALIDATE_INT) !== false && $value > 0 && $value <= $maxValue;
     };
 }
 
@@ -126,11 +121,7 @@ function dateYmd(): callable
         $dateTimeObj = date_create_from_format($format, $value);
         $errors = date_get_last_errors();
 
-        if ($errors === false) {
-            return $dateTimeObj !== false;
-        }
-
-        return $dateTimeObj !== false && array_sum($errors) === 0;
+        return $dateTimeObj !== false && ($errors === false || array_sum($errors) === 0);
     };
 }
 
@@ -184,11 +175,7 @@ function emailNotExists(mysqli $conn): callable
 function validateBidStep(int $price, int $step, bool $hasBids): callable
 {
     return function ($bid) use ($price, $step, $hasBids): bool {
-        if ($hasBids) {
-            return (int)$bid >= $price + $step;
-        }
-
-        return (int)$bid >= $price;
+        return $hasBids ? (int)$bid >= $price + $step : (int)$bid >= $price;
     };
 }
 
